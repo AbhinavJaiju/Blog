@@ -9,10 +9,13 @@ import { ArticlePage } from './components/pages/ArticlePage'
 import { AboutPage } from './components/pages/AboutPage'
 import { ContactPage } from './components/pages/ContactPage'
 import { ArchivePage } from './components/pages/ArchivePage'
+import { getHygraphBlogContent } from './integrations/hygraph'
 import './styles.css'
 
 function App() {
   const [page, setPage] = useState(() => window.location.hash.replace('#', '') || 'home')
+  const [blogContent, setBlogContent] = useState(content)
+  const [cmsStatus, setCmsStatus] = useState('loading')
 
   useEffect(() => {
     const syncHash = () => setPage(window.location.hash.replace('#', '') || 'home')
@@ -29,34 +32,55 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    let isActive = true
+
+    getHygraphBlogContent(content)
+      .then((hygraphContent) => {
+        if (!isActive) return
+        setBlogContent(hygraphContent)
+        setCmsStatus('loaded')
+      })
+      .catch((error) => {
+        if (!isActive) return
+        console.warn('Hygraph content unavailable. Falling back to local content.', error)
+        setBlogContent(content)
+        setCmsStatus('fallback')
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
   const Page = useMemo(() => {
     switch (page) {
       case 'article':
-        return () => <ArticlePage article={content.articlePage} related={content.related} />
+        return () => <ArticlePage article={blogContent.articlePage} related={blogContent.related} />
       case 'about':
-        return () => <AboutPage about={content.about} />
+        return () => <AboutPage about={blogContent.about} />
       case 'contact':
-        return () => <ContactPage contact={content.contact} />
+        return () => <ContactPage contact={blogContent.contact} />
       case 'archive':
-        return () => <ArchivePage articles={content.articles} featured={content.featured} />
+        return () => <ArchivePage articles={blogContent.articles} featured={blogContent.featured} />
       default:
         return () => (
           <HomePage
-            articles={content.articles}
-            featured={content.featured}
-            newsletter={content.newsletter}
+            articles={blogContent.articles}
+            featured={blogContent.featured}
+            newsletter={blogContent.newsletter}
           />
         )
     }
-  }, [page])
+  }, [blogContent, page])
 
   return (
-    <main className="min-h-screen bg-[#eef3f7] text-slate-700">
-      <Header navItems={content.navigation} page={page} />
+    <main className="min-h-screen bg-[#eef3f7] text-slate-700" data-cms={cmsStatus}>
+      <Header navItems={blogContent.navigation} page={page} />
       <AnimatePresence mode="wait">
         <Page key={page} />
       </AnimatePresence>
-      <Footer site={content.site} />
+      <Footer site={blogContent.site} />
     </main>
   )
 }

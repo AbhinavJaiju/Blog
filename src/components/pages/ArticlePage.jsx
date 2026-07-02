@@ -38,11 +38,11 @@ export function ArticlePage({ article, related }) {
             {article.paragraphs[0]}
           </p>
           <h2>{article.sections[0]}</h2>
-          <p>{article.paragraphs[1]}</p>
+          <p>{article.paragraphs[1] || article.excerpt}</p>
           <blockquote>"{article.quote}"</blockquote>
-          <p>{article.paragraphs[2]}</p>
+          <p>{article.paragraphs[2] || article.paragraphs[0]}</p>
           <h2>{article.sections[1]}</h2>
-          <p>{article.paragraphs[3]}</p>
+          <p>{article.paragraphs[3] || article.paragraphs[1] || article.paragraphs[0]}</p>
         </div>
         <div className="mt-16 flex items-center gap-4">
           <span className="text-sm font-extrabold uppercase tracking-[0.16em] text-slate-500">
