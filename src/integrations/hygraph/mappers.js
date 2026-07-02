@@ -11,7 +11,8 @@ export function mapHygraphArticle(article) {
 }
 
 export function mapHygraphArticlePage(article) {
-  const paragraphs = normalizeRichTextParagraphs(article.content?.raw) || [
+  const contentBlocks = normalizeRichTextBlocks(article.content?.raw)
+  const paragraphs = contentBlocks?.map((block) => block.children.map((child) => child.text).join('')) || [
     article.excerpt || '',
     'This article is managed in Hygraph. Add rich text content to expand the full reading experience.',
     '',
@@ -29,6 +30,7 @@ export function mapHygraphArticlePage(article) {
     heroAlt: article.title,
     excerpt: article.excerpt || '',
     paragraphs,
+    contentBlocks,
     sections: ['The Perspective', 'Further Reading'],
     quote: article.excerpt || 'A focused perspective from the archive.',
     slug: article.slug,
@@ -67,17 +69,32 @@ export function mapHygraphFeaturedPost(post) {
   }
 }
 
-function normalizeRichTextParagraphs(raw) {
+function normalizeRichTextBlocks(raw) {
   if (!raw?.children?.length) return null
 
-  const paragraphs = raw.children
+  const blocks = raw.children
     .map((node) => {
-      if (!node.children?.length) return ''
-      return node.children.map((child) => child.text || '').join('').trim()
+      if (!node.children?.length) return null
+
+      const children = node.children
+        .map((child) => ({
+          text: child.text || '',
+          bold: Boolean(child.bold),
+          italic: Boolean(child.italic),
+          underline: Boolean(child.underline),
+        }))
+        .filter((child) => child.text.trim())
+
+      if (!children.length) return null
+
+      return {
+        type: node.type || 'paragraph',
+        children,
+      }
     })
     .filter(Boolean)
 
-  return paragraphs.length ? paragraphs : null
+  return blocks.length ? blocks : null
 }
 
 function formatHygraphDate(date) {

@@ -99,10 +99,36 @@ export const postDetailsQuery = gql`
 
 export const commentsQuery = gql`
   query GetComments($slug: String!) {
-    comments(where: { post: { slug: $slug } }) {
+    comments(where: { post: { slug: $slug } }, orderBy: createdAt_DESC) {
       name
       createdAt
       comment
+    }
+  }
+`
+
+export const createCommentMutation = gql`
+  mutation CreateComment($name: String!, $email: String!, $comment: String!, $slug: String!) {
+    createComment(
+      data: {
+        name: $name
+        email: $email
+        comment: $comment
+        post: { connect: { slug: $slug } }
+      }
+    ) {
+      id
+      name
+      createdAt
+      comment
+    }
+  }
+`
+
+export const publishCommentMutation = gql`
+  mutation PublishComment($id: ID!) {
+    publishComment(where: { id: $id }, to: PUBLISHED) {
+      id
     }
   }
 `

@@ -4,9 +4,11 @@ import {
   categoriesQuery,
   categoryPostsQuery,
   commentsQuery,
+  createCommentMutation,
   featuredPostsQuery,
   postDetailsQuery,
   postsConnectionQuery,
+  publishCommentMutation,
   recentPostsQuery,
   similarPostsQuery,
 } from './queries'
@@ -47,15 +49,24 @@ export async function getHygraphArticle(slug) {
 }
 
 export async function submitComment(obj) {
-  const result = await fetch('/api/comments', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(obj),
+  const result = await hygraphRequest(createCommentMutation, {
+    name: obj.name,
+    email: obj.email,
+    comment: obj.comment,
+    slug: obj.slug,
+  }, {
+    mutation: true,
   })
 
-  return result.json()
+  if (result.createComment?.id) {
+    await hygraphRequest(publishCommentMutation, {
+      id: result.createComment.id,
+    }, {
+      mutation: true,
+    })
+  }
+
+  return result.createComment
 }
 
 export async function getComments(slug) {
