@@ -30,12 +30,12 @@ export function Header({ navItems, page }) {
             </button>
           ))}
         </nav>
-        <button
+        {/* <button
           className="bg-navy px-4 py-3 text-xs font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-[#123c69] sm:px-7"
           onClick={() => goTo('contact')}
         >
           Newsletter
-        </button>
+        </button> */}
       </div>
     </header>
   )

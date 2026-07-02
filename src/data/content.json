@@ -5,8 +5,7 @@
   },
   "navigation": [
     { "id": "home", "label": "Readings" },
-    { "id": "archive", "label": "Archive" },
-    { "id": "contact", "label": "Contact" }
+    { "id": "archive", "label": "Archive" }
   ],
   "featured": {
     "title": "The Art of Stillness in a Hyper-Connected World",
