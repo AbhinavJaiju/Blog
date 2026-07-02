@@ -15,7 +15,7 @@ export function Header({ navItems, page }) {
           className="font-serif text-[1.45rem] font-bold uppercase leading-[1.05] tracking-[0.18em] text-navy sm:text-2xl md:text-[1.7rem]"
           onClick={() => goTo('home')}
         >
-          The<br className="sm:hidden" /> Perspective
+          The<br className="sm:hidden" /> Dumb Guy
         </button>
         <nav className="hidden items-center gap-9 text-xs font-extrabold tracking-[0.12em] text-slate-500 md:flex">
           {navItems.slice(0, 3).map((item) => (

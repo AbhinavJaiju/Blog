@@ -6,7 +6,6 @@
   "navigation": [
     { "id": "home", "label": "Readings" },
     { "id": "archive", "label": "Archive" },
-    { "id": "about", "label": "About" },
     { "id": "contact", "label": "Contact" }
   ],
   "featured": {

@@ -41,6 +41,11 @@ export async function getPostDetails(slug) {
   return result.post
 }
 
+export async function getHygraphArticle(slug) {
+  const post = await getPostDetails(slug)
+  return post ? mapHygraphArticlePage(post) : null
+}
+
 export async function submitComment(obj) {
   const result = await fetch('/api/comments', {
     method: 'POST',

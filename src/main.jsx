@@ -9,17 +9,44 @@ import { ArticlePage } from './components/pages/ArticlePage'
 import { AboutPage } from './components/pages/AboutPage'
 import { ContactPage } from './components/pages/ContactPage'
 import { ArchivePage } from './components/pages/ArchivePage'
-import { getHygraphBlogContent } from './integrations/hygraph'
+import { getHygraphArticle, getHygraphBlogContent } from './integrations/hygraph'
 import './styles.css'
 
+function parseRoute() {
+  const [page = 'home', slug = ''] = window.location.hash.replace('#', '').split('/')
+  return {
+    page: page || 'home',
+    slug,
+  }
+}
+
 function App() {
-  const [page, setPage] = useState(() => window.location.hash.replace('#', '') || 'home')
+  const [route, setRoute] = useState(parseRoute)
   const [blogContent, setBlogContent] = useState(content)
+  const [activeArticle, setActiveArticle] = useState(content.articlePage)
   const [cmsStatus, setCmsStatus] = useState('loading')
+  const { page, slug } = route
 
   useEffect(() => {
-    const syncHash = () => setPage(window.location.hash.replace('#', '') || 'home')
-    const syncNavigation = (event) => setPage(event.detail || 'home')
+    const updateRoute = (nextRoute) => {
+      setRoute((currentRoute) =>
+        currentRoute.page === nextRoute.page && currentRoute.slug === nextRoute.slug
+          ? currentRoute
+          : nextRoute,
+      )
+    }
+    const syncHash = () => updateRoute(parseRoute())
+    const syncNavigation = (event) => {
+      if (typeof event.detail === 'string') {
+        updateRoute({ page: event.detail || 'home', slug: '' })
+        return
+      }
+
+      updateRoute({
+        page: event.detail?.page || 'home',
+        slug: event.detail?.slug || '',
+      })
+    }
     window.addEventListener('hashchange', syncHash)
     window.addEventListener('popstate', syncHash)
     window.addEventListener('perspective:navigate', syncNavigation)
@@ -39,6 +66,7 @@ function App() {
       .then((hygraphContent) => {
         if (!isActive) return
         setBlogContent(hygraphContent)
+        setActiveArticle(hygraphContent.articlePage)
         setCmsStatus('loaded')
       })
       .catch((error) => {
@@ -53,12 +81,41 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (page !== 'article') return
+
+    const fallbackArticle =
+      slug && blogContent.featured?.slug === slug ? blogContent.articlePage : blogContent.articlePage
+
+    if (!slug) {
+      setActiveArticle(fallbackArticle)
+      return
+    }
+
+    let isActive = true
+
+    getHygraphArticle(slug)
+      .then((article) => {
+        if (!isActive) return
+        setActiveArticle(article || fallbackArticle)
+      })
+      .catch((error) => {
+        if (!isActive) return
+        console.warn('Hygraph article unavailable. Falling back to current article.', error)
+        setActiveArticle(fallbackArticle)
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [blogContent, page, slug])
+
   const Page = useMemo(() => {
     switch (page) {
       case 'article':
-        return () => <ArticlePage article={blogContent.articlePage} related={blogContent.related} />
-      case 'about':
-        return () => <AboutPage about={blogContent.about} />
+        return () => <ArticlePage article={activeArticle} related={blogContent.related} />
+      // case 'about':
+      //   return () => <AboutPage about={blogContent.about} />
       case 'contact':
         return () => <ContactPage contact={blogContent.contact} />
       case 'archive':
@@ -72,7 +129,7 @@ function App() {
           />
         )
     }
-  }, [blogContent, page])
+  }, [activeArticle, blogContent, page])
 
   return (
     <main className="min-h-screen bg-[#eef3f7] text-slate-700" data-cms={cmsStatus}>

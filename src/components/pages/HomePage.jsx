@@ -32,7 +32,7 @@ export function HomePage({ articles, featured, newsletter }) {
           </p>
           <button
             className="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-navy"
-            onClick={() => goTo('article')}
+            onClick={() => goTo('article', { slug: featured.slug })}
           >
             Read the feature <ArrowRight size={18} />
           </button>
@@ -52,9 +52,18 @@ export function HomePage({ articles, featured, newsletter }) {
         <div className="mt-8 grid gap-10 md:grid-cols-3">
           {articles.map((article, index) => (
             <motion.article
-              className="border-b border-slate-300 pb-9 md:border-b-0"
+              className="cursor-pointer border-b border-slate-300 pb-9 outline-none transition focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-4 focus-visible:ring-offset-[#eef3f7] md:border-b-0"
               initial={{ opacity: 0, y: 28 }}
               key={article.title}
+              onClick={() => goTo('article', { slug: article.slug })}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  goTo('article', { slug: article.slug })
+                }
+              }}
+              role="button"
+              tabIndex={0}
               transition={{ delay: index * 0.08, duration: 0.42 }}
               viewport={{ once: true, amount: 0.2 }}
               whileHover={{ y: -6 }}

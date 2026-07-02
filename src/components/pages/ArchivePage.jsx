@@ -21,7 +21,7 @@ export function ArchivePage({ articles, featured }) {
             <button
               className="grid w-full gap-4 py-7 text-left transition hover:bg-white/60 md:grid-cols-[150px_1fr_140px]"
               key={item.title}
-              onClick={() => goTo('article')}
+              onClick={() => goTo('article', { slug: item.slug || featured.slug })}
             >
               <span className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
                 {item.topic || item.category}
